@@ -4,7 +4,7 @@ const axios = require("axios");
 const querystring = require("querystring");
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 let accessToken = "";
 
@@ -31,7 +31,8 @@ const getUserAccessToken = async (code) => {
 
 // Redirecionar para a página de autorização do Twitch
 app.get("/auth", (req, res) => {
-  const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${process.env.TWITCH_CLIENT_ID}&redirect_uri=${process.env.TWITCH_REDIRECT_URI}&response_type=code&scope=clips:edit`;
+  const { client_id, redirect_uri } = req.query;
+  const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${client_id || process.env.TWITCH_CLIENT_ID}&redirect_uri=${redirect_uri || process.env.TWITCH_REDIRECT_URI}&response_type=code&scope=clips:edit`;
   res.redirect(authUrl);
 });
 
@@ -45,22 +46,24 @@ app.get("/auth/callback", async (req, res) => {
 
 // Home
 app.get("/", (req, res) => {
-  res.send("Olá, mundo!");
+  res.send("API está rodando!");
 });
 
 // Criar Clipe
 app.post("/create-clip", async (req, res) => {
+  const { client_id, broadcaster_id } = req.query;
+
   try {
     const response = await axios.post(
       `https://api.twitch.tv/helix/clips`,
       null,
       {
         headers: {
-          "Client-ID": process.env.TWITCH_CLIENT_ID,
+          "Client-ID": client_id || process.env.TWITCH_CLIENT_ID,
           Authorization: `Bearer ${accessToken}`,
         },
         params: {
-          broadcaster_id: process.env.TWITCH_BROADCASTER_ID,
+          broadcaster_id: broadcaster_id || process.env.TWITCH_BROADCASTER_ID,
         },
       }
     );
