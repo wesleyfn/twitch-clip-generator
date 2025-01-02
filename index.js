@@ -69,10 +69,9 @@ app.get("/create-clip", async (req, res) => {
     );
 
     const clipData = response.data.data[0]; // Primeiro clipe criado
-    res.json({
-      message: "Clipe criado com sucesso!",
-      clip_url: `https://clips.twitch.tv/${clipData.id}`,
-    });
+
+    // Enviar o link do clipe criado
+    res.send(`https://clips.twitch.tv/${clipData.id}`);
   } catch (error) {
     console.error("Erro ao criar o clipe:", error.response.data);
     res.status(500).json({ error: "Erro ao criar o clipe." });
