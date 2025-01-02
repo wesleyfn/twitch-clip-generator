@@ -50,7 +50,7 @@ app.get("/", (req, res) => {
 });
 
 // Criar Clipe
-app.post("/create-clip", async (req, res) => {
+app.get("/create-clip", async (req, res) => {
   const { client_id, broadcaster_id } = req.query;
 
   try {
