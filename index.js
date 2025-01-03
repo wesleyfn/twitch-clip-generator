@@ -31,8 +31,7 @@ const getUserAccessToken = async (code) => {
 
 // Redirecionar para a página de autorização do Twitch
 app.get("/auth", (req, res) => {
-  const { client_id, redirect_uri } = req.query;
-  const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${client_id || process.env.TWITCH_CLIENT_ID}&redirect_uri=${redirect_uri || process.env.TWITCH_REDIRECT_URI}&response_type=code&scope=clips:edit`;
+  const authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${process.env.TWITCH_CLIENT_ID}&redirect_uri=${process.env.TWITCH_REDIRECT_URI}&response_type=code&scope=clips:edit`;
   res.redirect(authUrl);
 });
 
@@ -41,17 +40,17 @@ app.get("/auth/callback", async (req, res) => {
   const code = req.query.code;
   console.log("Código de autorização:", code);
   await getUserAccessToken(code);
-  res.send("Autorização concluída com sucesso! Você pode fechar esta janela.");
+  res.json({ message: "User access token obtido com sucesso! Verifique o console." });
 });
 
 // Home
 app.get("/", (req, res) => {
-  res.send("API está rodando!");
+  res.json({ message: "API rodando!" });
 });
 
 // Criar Clipe
 app.get("/create-clip", async (req, res) => {
-  const { client_id, broadcaster_id } = req.query;
+  const { broadcaster_id } = req.query;
 
   try {
     const response = await axios.post(
@@ -59,11 +58,11 @@ app.get("/create-clip", async (req, res) => {
       null,
       {
         headers: {
-          "Client-ID": client_id || process.env.TWITCH_CLIENT_ID,
+          "Client-ID": process.env.TWITCH_CLIENT_ID,
           Authorization: `Bearer ${accessToken}`,
         },
         params: {
-          broadcaster_id: broadcaster_id || process.env.TWITCH_BROADCASTER_ID,
+          broadcaster_id: broadcaster_id,
         },
       }
     );
@@ -74,7 +73,7 @@ app.get("/create-clip", async (req, res) => {
     res.send(`https://clips.twitch.tv/${clipData.id}`);
   } catch (error) {
     console.error("Erro ao criar o clipe:", error.response.data);
-    res.status(500).json({ error: "Erro ao criar o clipe." });
+    res.json(error.response.data);
   }
 });
 
